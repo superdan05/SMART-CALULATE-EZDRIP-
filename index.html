@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <link rel="icon" href="https://img2.pic.in.th/pic/IMG_35598dcf9744f50d0c37.jpeg" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="MyWebSite" />
+<link rel="manifest" href="/site.webmanifest" />
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EZdrip</title>
+    <title>EzDrip</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -95,10 +97,13 @@
         }
 
         @media print {
-            body {
-                box-shadow: none;
-                margin: 0;
-                padding: 20px;
+            body * {
+                display: none;
+            }
+
+            #printArea {
+                display: block;
+                font-size: 18px;
             }
         }
     </style>
@@ -110,23 +115,23 @@
         <h2>คำนวณอัตราสารน้ำ 💧</h2>
 
         <label>Volume (ml):</label>
-        <input type="text" id="volume">
+        <input type="text" id="volume" oninput="clearResult()">
 
         <label>ชั่วโมง และ นาที:</label>
         <div class="input-group">
-            <input type="text" id="hours" placeholder="ชั่วโมง">
-            <input type="text" id="minutes" placeholder="นาที">
+            <input type="text" id="hours" placeholder="ชั่วโมง" oninput="clearResult()">
+            <input type="text" id="minutes" placeholder="นาที" oninput="clearResult()">
         </div>
 
         <label>Rate (ml/h):</label>
-        <input type="text" id="rate">
+        <input type="text" id="rate" oninput="clearResult()">
 
         <button onclick="calculate()">✅ คำนวณ</button>
         <button onclick="resetForm()">🔄 ล้างค่า</button>
       
         <h2>ใบกำกับสารน้ำ</h2>
       
-        <label>เลือกสารน้ำ:</label>
+            <label>เลือกสารน้ำ:</label>
         <select id="fluidType" onchange="toggleCustomFluid()">
             <option value="SF">SF</option>
             <option value="นม">นม</option>
@@ -136,7 +141,7 @@
       
         <input id="customFluid" class="hidden" type="text" placeholder="ระบุสารน้ำ">
       
-        <label>วันที่ให้สารน้ำ:</label>
+          <label>วันที่ให้สารน้ำ:</label>
         <input type="date" id="date">
 
         <label>เวลาที่ให้สารน้ำ:</label>
@@ -152,53 +157,107 @@
 
     </div>
 
-    <script>
-        function calculate() {
-            let volume = eval(document.getElementById("volume").value || "0");
-            let hours = eval(document.getElementById("hours").value || "0");
-            let minutes = eval(document.getElementById("minutes").value || "0");
-            
-            let totalMinutes = (hours * 60) + minutes;
-            let rate = totalMinutes > 0 ? (volume / totalMinutes) * 60 : 0;
-            
-            document.getElementById("rate").value = rate.toFixed(2);
+    <div id="printArea" class="hidden"></div>
 
-            // Change color to red after calculation
-            document.getElementById("volume").style.color = "red";
-            document.getElementById("rate").style.color = "red";
-            document.getElementById("hours").style.color = "red";
-            document.getElementById("minutes").style.color = "red";
+    <script>
+        function toggleCustomFluid() {
+            let fluidType = document.getElementById("fluidType").value;
+            document.getElementById("customFluid").classList.toggle("hidden", fluidType !== "custom");
         }
 
-        function resetForm() {
-            document.querySelectorAll('input, select').forEach(el => {
-                if (el.tagName === 'SELECT') {
-                    el.value = el.options[0].value;
-                } else {
-                    el.value = '';
-                }
-            });
-            document.getElementById("customFluid").classList.add("hidden");
-
-            // Reset color to black when clearing
+        function clearResult() {
+            // เคลียร์ผลลัพธ์เมื่อมีการกรอกข้อมูลใหม่
             document.getElementById("volume").style.color = "black";
             document.getElementById("rate").style.color = "black";
             document.getElementById("hours").style.color = "black";
             document.getElementById("minutes").style.color = "black";
         }
 
-        function toggleCustomFluid() {
-            const fluidType = document.getElementById("fluidType").value;
-            const customFluidInput = document.getElementById("customFluid");
-            if (fluidType === "custom") {
-                customFluidInput.classList.remove("hidden");
-            } else {
-                customFluidInput.classList.add("hidden");
+        function calculate() {
+            let volume = parseFloat(eval(document.getElementById("volume").value)) || 0;
+            let rate = parseFloat(eval(document.getElementById("rate").value)) || 0;
+            let hours = parseFloat(eval(document.getElementById("hours").value)) || 0;
+            let minutes = parseFloat(eval(document.getElementById("minutes").value)) || 0;
+
+            let totalHours = (hours + (minutes / 60)).toFixed(2);
+
+            // เมื่อไม่มีค่า Volume
+            if (!volume && rate > 0 && totalHours > 0) {
+                document.getElementById("volume").value = (rate * totalHours).toFixed(2);
+                document.getElementById("volume").style.color = "red";
+            }
+            // เมื่อไม่มีค่า Rate
+            else if (!rate && volume > 0 && totalHours > 0) {
+                document.getElementById("rate").value = (volume / totalHours).toFixed(2);
+                document.getElementById("rate").style.color = "red";
+            }
+            // เมื่อไม่มีค่า ชั่วโมง และ นาที
+            else if (!totalHours && volume > 0 && rate > 0) {
+                let calculatedHours = volume / rate;
+                let finalHours = Math.floor(calculatedHours);
+                let finalMinutes = Math.round((calculatedHours - finalHours) * 60);
+
+                document.getElementById("hours").value = finalHours;
+                document.getElementById("minutes").value = finalMinutes;
+                document.getElementById("hours").style.color = "red";
+                document.getElementById("minutes").style.color = "red";
             }
         }
 
+        function resetForm() {
+            document.getElementById("fluidType").value = "SF";
+            document.getElementById("customFluid").classList.add("hidden");
+            document.getElementById("customFluid").value = "";
+            document.getElementById("volume").value = "";
+            document.getElementById("hours").value = "";
+            document.getElementById("minutes").value = "";
+            document.getElementById("rate").value = "";
+
+            document.getElementById("volume").style.color = "black";
+            document.getElementById("rate").style.color = "black";
+            document.getElementById("hours").style.color = "black";
+            document.getElementById("minutes").style.color = "black";
+        }
+
         function printResults() {
-            window.print();
+            let volume = document.getElementById("volume").value;
+            let rate = document.getElementById("rate").value;
+            let hours = document.getElementById("hours").value;
+            let minutes = document.getElementById("minutes").value;
+            let fluidType = document.getElementById("fluidType").value;
+            let customFluid = document.getElementById("customFluid").value;
+
+            let fluidName = (fluidType === "custom" ? customFluid : fluidType);
+          
+           let organizer = document.getElementById("organizer").value || "ไม่ระบุ";
+          
+    let checker = document.getElementById("checker").value || "ไม่ระบุ";
+          
+    let date = document.getElementById("date").value || "ไม่ระบุ";
+          
+    let time = document.getElementById("time").value || "ไม่ระบุ";
+          
+    let dateTime = `${date} ${time}`;
+
+            let printArea = document.getElementById("printArea");
+            printArea.innerHTML = `<h2>ใบกำกับสารน้ำ</h2>
+                                   <p>สารน้ำ: ${fluidName}</p>
+                                   <p>Volume: ${volume} ml</p>
+                                   <p>Rate: ${rate} ml/h</p>
+ 
+      <p>Date/Time of administer: ${dateTime}</p>
+      
+        <p>Prepared: ${organizer}</p>
+        
+        <p>Double check by: ${checker}</p>`;
+            printArea.classList.remove("hidden");
+
+            let printWindow = window.open('', '', 'height=500,width=600');
+            printWindow.document.write('<html><head><title>ใบกำกับสารน้ำ</title></head><body>');
+            printWindow.document.write(printArea.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
         }
     </script>
 
