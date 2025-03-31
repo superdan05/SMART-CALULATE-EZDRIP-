@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <link rel="icon" href="https://img2.pic.in.th/pic/IMG_35598dcf9744f50d0c37.jpeg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EZdrip</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #dad3cd;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fffceb;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #0277bd;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        button {
+            width: 90%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ffbeb1;
+            color: #0f4267;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #0277bd;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .result {
+            color: red;
+        }
+
+        @media print {
+            body {
+                box-shadow: none;
+                margin: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="https://img2.pic.in.th/pic/IMG_35598dcf9744f50d0c37.jpeg" alt="โลโก้" class="logo">
+        <h2>คำนวณอัตราสารน้ำ 💧</h2>
+
+        <label>Volume (ml):</label>
+        <input type="text" id="volume">
+
+        <label>ชั่วโมง และ นาที:</label>
+        <div class="input-group">
+            <input type="text" id="hours" placeholder="ชั่วโมง">
+            <input type="text" id="minutes" placeholder="นาที">
+        </div>
+
+        <label>Rate (ml/h):</label>
+        <input type="text" id="rate">
+
+        <button onclick="calculate()">✅ คำนวณ</button>
+        <button onclick="resetForm()">🔄 ล้างค่า</button>
+      
+        <h2>ใบกำกับสารน้ำ</h2>
+      
+        <label>เลือกสารน้ำ:</label>
+        <select id="fluidType" onchange="toggleCustomFluid()">
+            <option value="SF">SF</option>
+            <option value="นม">นม</option>
+            <option value="BD">BD</option>
+            <option value="custom">ระบุเพิ่ม</option>
+        </select>
+      
+        <input id="customFluid" class="hidden" type="text" placeholder="ระบุสารน้ำ">
+      
+        <label>วันที่ให้สารน้ำ:</label>
+        <input type="date" id="date">
+
+        <label>เวลาที่ให้สารน้ำ:</label>
+        <input type="time" id="time">
+
+        <label>ชื่อผู้จัด:</label>
+        <input type="text" id="organizer" placeholder="พิมพ์ชื่อ">
+
+        <label>ชื่อผู้ตรวจสอบ:</label>
+        <input type="text" id="checker" placeholder="พิมพ์ชื่อ">
+
+        <button onclick="printResults()">🖨️ พิมพ์</button>
+
+    </div>
+
+    <script>
+        function calculate() {
+            let volume = eval(document.getElementById("volume").value || "0");
+            let hours = eval(document.getElementById("hours").value || "0");
+            let minutes = eval(document.getElementById("minutes").value || "0");
+            
+            let totalMinutes = (hours * 60) + minutes;
+            let rate = totalMinutes > 0 ? (volume / totalMinutes) * 60 : 0;
+            
+            document.getElementById("rate").value = rate.toFixed(2);
+
+            // Change color to red after calculation
+            document.getElementById("volume").style.color = "red";
+            document.getElementById("rate").style.color = "red";
+            document.getElementById("hours").style.color = "red";
+            document.getElementById("minutes").style.color = "red";
+        }
+
+        function resetForm() {
+            document.querySelectorAll('input, select').forEach(el => {
+                if (el.tagName === 'SELECT') {
+                    el.value = el.options[0].value;
+                } else {
+                    el.value = '';
+                }
+            });
+            document.getElementById("customFluid").classList.add("hidden");
+
+            // Reset color to black when clearing
+            document.getElementById("volume").style.color = "black";
+            document.getElementById("rate").style.color = "black";
+            document.getElementById("hours").style.color = "black";
+            document.getElementById("minutes").style.color = "black";
+        }
+
+        function toggleCustomFluid() {
+            const fluidType = document.getElementById("fluidType").value;
+            const customFluidInput = document.getElementById("customFluid");
+            if (fluidType === "custom") {
+                customFluidInput.classList.remove("hidden");
+            } else {
+                customFluidInput.classList.add("hidden");
+            }
+        }
+
+        function printResults() {
+            window.print();
+        }
+    </script>
+
+</body>
+</html>
